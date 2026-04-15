@@ -2,12 +2,11 @@ services:
   # ─── Backend API (Express + SQLite) ──────────────────────
   - type: web
     name: smartroute-backend
-    runtime: node
+    runtime: docker
     region: oregon
     plan: free
     rootDir: backend
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
@@ -15,16 +14,11 @@ services:
         value: "5000"
       - key: JWT_SECRET
         generateValue: true
-      - key: ML_SERVICE_URL
-        fromService:
-          name: smartroute-ml
-          type: web
-          property: url
       - key: FRONTEND_URL
         fromService:
           name: smartroute-frontend
           type: web
-          property: url
+          property: host
     healthCheckPath: /api/health
 
   # ─── Frontend (Next.js) ─────────────────────────────────
@@ -41,9 +35,9 @@ services:
         fromService:
           name: smartroute-backend
           type: web
-          property: url
+          property: host
       - key: NEXT_PUBLIC_WS_URL
-        value: ""  # Set manually after deploy (wss://<backend-url>)
+        value: ""
 
   # ─── ML Service (FastAPI + Python) ──────────────────────
   - type: web
